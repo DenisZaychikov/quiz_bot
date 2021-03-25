@@ -1,6 +1,7 @@
 import os
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, \
+    ConversationHandler, RegexHandler
 import logging
 from dotenv import load_dotenv
 import random
@@ -8,6 +9,7 @@ import redis
 import pdb
 
 DIRECTORY_PATH = 'questions'
+NEW_QUESTION, ANSWER = range(2)
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -48,8 +50,10 @@ def start(bot, update):
     ]
     reply_markup = telegram.ReplyKeyboardMarkup(keyboard)
 
-    update.message.reply_text(text='Привет! Я бот для викторин!',
+    update.message.reply_text(text='Привет! Я бот для викторин! Давай поиграем!',
                               reply_markup=reply_markup)
+
+    return NEW_QUESTION
 
 
 def help(bot, update):
@@ -70,8 +74,22 @@ def echo(bot, update):
     update.message.reply_text(text=answer)
 
 
+def handle_new_question_request(bot, update):
+    random_question = random.choice(list(questions_and_answers.keys()))
+
+    update.message.reply_text(text=random_question)
+
+
+def handle_solution_attempt(bot, update):
+    update.message.reply_text(text='Сдаёёёмсууууу!')
+
+
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
+
+
+def cancel(bot, update):
+    return ConversationHandler.END
 
 
 if __name__ == '__main__':
@@ -82,9 +100,20 @@ if __name__ == '__main__':
     r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
     updater = Updater(token=tg_bot_token)
     dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+        states={
+            NEW_QUESTION: [
+                MessageHandler(Filters.regex(r'Новый вопрос'), handle_new_question_request),
+                MessageHandler(Filters.regex(r'Сдаться'), handle_solution_attempt),
+                MessageHandler(Filters.text, start)
+            ]
+        },
+        fallbacks=[CommandHandler('cancel', cancel)]
+    )
+    # dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(conv_handler)
+    # dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
