@@ -1,12 +1,11 @@
 import os
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, \
-    ConversationHandler, RegexHandler
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
+                          ConversationHandler)
 import logging
 from dotenv import load_dotenv
 import random
 import redis
-import pdb
 
 DIRECTORY_PATH = 'questions'
 NEW_QUESTION, ANSWER = range(2)
@@ -50,38 +49,41 @@ def start(bot, update):
     ]
     reply_markup = telegram.ReplyKeyboardMarkup(keyboard)
 
-    update.message.reply_text(text='Привет! Я бот для викторин! Давай поиграем!',
-                              reply_markup=reply_markup)
+    update.message.reply_text(
+        text='Привет! Я бот для викторин! Давай поиграем!',
+        reply_markup=reply_markup)
 
     return NEW_QUESTION
 
 
-def help(bot, update):
-    update.message.reply_text('Help!')
-
-
-def echo(bot, update):
-    answer = 'Неправильно… Попробуешь ещё раз?'
-    if update.message.text == 'Новый вопрос':
-        random_question = random.choice(list(questions_and_answers.keys()))
-        r.set(user_chat_id, random_question)
-        answer = random_question
-        print(questions_and_answers[random_question])
-    if update.message.text == get_short_answer(
-            questions_and_answers[r.get(user_chat_id)]):
-        answer = 'Правильно! Поздравляю! Для следующего вопроса нажми «Новый вопрос».'
-
+def give_up(bot, update):
+    answer = get_short_answer(questions_and_answers[r.get(user_chat_id)])
     update.message.reply_text(text=answer)
+
+    handle_new_question_request(bot, update)
 
 
 def handle_new_question_request(bot, update):
     random_question = random.choice(list(questions_and_answers.keys()))
-
+    # print(questions_and_answers[random_question])
+    r.set(user_chat_id, random_question)
     update.message.reply_text(text=random_question)
+
+    return ANSWER
 
 
 def handle_solution_attempt(bot, update):
-    update.message.reply_text(text='Сдаёёёмсууууу!')
+    answer = 'Неправильно… Попробуешь ещё раз?'
+    if update.message.text == get_short_answer(
+            questions_and_answers[r.get(user_chat_id)]):
+        answer = 'Правильно! Поздравляю! Для следующего вопроса нажми «Новый вопрос».'
+        update.message.reply_text(text=answer)
+
+        return NEW_QUESTION
+
+    update.message.reply_text(text=answer)
+
+    return ANSWER
 
 
 def error(bot, update, error):
@@ -104,16 +106,21 @@ if __name__ == '__main__':
         entry_points=[CommandHandler('start', start)],
         states={
             NEW_QUESTION: [
-                MessageHandler(Filters.regex(r'Новый вопрос'), handle_new_question_request),
-                MessageHandler(Filters.regex(r'Сдаться'), handle_solution_attempt),
+                MessageHandler(Filters.regex(r'Новый вопрос'),
+                               handle_new_question_request),
                 MessageHandler(Filters.text, start)
+            ],
+            ANSWER: [
+                MessageHandler(Filters.regex(r'Новый вопрос'),
+                               handle_new_question_request),
+                MessageHandler(Filters.regex(r'Сдаться'),
+                               give_up),
+                MessageHandler(Filters.text, handle_solution_attempt),
             ]
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
-    # dp.add_handler(CommandHandler("start", start))
     dp.add_handler(conv_handler)
-    # dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
