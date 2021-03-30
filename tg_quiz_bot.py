@@ -65,7 +65,6 @@ def give_up(bot, update):
 
 def handle_new_question_request(bot, update):
     random_question = random.choice(list(questions_and_answers.keys()))
-    # print(questions_and_answers[random_question])
     r.set(user_chat_id, random_question)
     update.message.reply_text(text=random_question)
 
