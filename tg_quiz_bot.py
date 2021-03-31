@@ -6,8 +6,8 @@ import logging
 from dotenv import load_dotenv
 import random
 import redis
+from questions import get_questions_and_answers
 
-DIRECTORY_PATH = 'questions'
 NEW_QUESTION, ANSWER = range(2)
 
 logging.basicConfig(
@@ -23,23 +23,6 @@ def get_short_answer(answer):
             short_answer = answer[:num].strip()
 
             return short_answer
-
-
-def get_questions_and_answers():
-    questions_and_answers = {}
-    files = os.listdir(DIRECTORY_PATH)
-    for file in files:
-        with open(os.path.join(DIRECTORY_PATH, file), encoding='KOI8-R') as f:
-            file_info = f.read().split('\n\n')
-            question = ''
-            for item in file_info:
-                if 'Вопрос' in item:
-                    _, question = item.split(':\n', 1)
-                if 'Ответ' in item:
-                    _, answer = item.split('\n', 1)
-                    questions_and_answers[question] = answer
-
-    return questions_and_answers
 
 
 def start(bot, update):
@@ -97,8 +80,10 @@ if __name__ == '__main__':
     load_dotenv()
     tg_bot_token = os.getenv('TG_BOT_TOKEN')
     user_chat_id = os.getenv('USER_CHAT_ID')
+    redis_host = os.getenv('REDIS_HOST')
+    redis_port = os.getenv('RADIS_PORT')
     questions_and_answers = get_questions_and_answers()
-    r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    r = redis.Redis(host=redis_host, port=redis_port, db=0, decode_responses=True)
     updater = Updater(token=tg_bot_token)
     dp = updater.dispatcher
     conv_handler = ConversationHandler(
