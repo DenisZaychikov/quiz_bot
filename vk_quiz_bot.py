@@ -68,12 +68,13 @@ if __name__ == "__main__":
     vk_bot_token = os.getenv('VK_BOT_TOKEN')
     redis_host = os.getenv('REDIS_HOST')
     redis_port = os.getenv('RADIS_PORT')
+    redis_password = os.getenv('REDIS_PASSWORD')
     vk_session = vk_api.VkApi(token=vk_bot_token)
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
     questions_and_answers = get_questions_and_answers()
-    r = redis.Redis(host=redis_host, port=redis_port, db=0,
-                    decode_responses=True)
+    r = redis.Redis(host=redis_host, port=redis_port, password=redis_password,
+                    db=0, decode_responses=True)
     keyboard = VkKeyboard(one_time=True)
     keyboard.add_button('Новый вопрос', color=VkKeyboardColor.POSITIVE)
     keyboard.add_button('Сдаться', color=VkKeyboardColor.POSITIVE)

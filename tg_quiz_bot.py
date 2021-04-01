@@ -5,7 +5,7 @@ from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
 import logging
 from dotenv import load_dotenv
 import random
-import redis
+import redis, certifi
 from questions import get_questions_and_answers
 
 NEW_QUESTION, ANSWER = range(2)
@@ -82,8 +82,10 @@ if __name__ == '__main__':
     user_chat_id = os.getenv('USER_CHAT_ID')
     redis_host = os.getenv('REDIS_HOST')
     redis_port = os.getenv('RADIS_PORT')
+    redis_password = os.getenv('REDIS_PASSWORD')
     questions_and_answers = get_questions_and_answers()
-    r = redis.Redis(host=redis_host, port=redis_port, db=0, decode_responses=True)
+    r = redis.Redis(host=redis_host, port=redis_port, password=redis_password,
+                    db=0, decode_responses=True)
     updater = Updater(token=tg_bot_token)
     dp = updater.dispatcher
     conv_handler = ConversationHandler(
