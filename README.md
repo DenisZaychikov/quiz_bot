@@ -27,7 +27,21 @@
     RADIS_PORT=14588
     REDIS_PASSWORD=txpKMLjzGkBC97N3i883U7xVdf1K43zx
     ```
+```
+   GOOGLE_APPLICATION_CREDENTIALS=google-credentials.json
+   
+   GOOGLE_CREDENTIALS=содержимое файла google-credentials.json
+   
+   DIALOGFLOW_PROJECT_ID=имя вашего проекта в dialogflow
+   
+   VK_ADMIN_ID=id администратора-хозяина приложения
+   
+   VK_BOT_TOKEN=токен группы вконтакте
 
+   TG_BOT_TOKEN=токен телеграм-бота
+   
+   TG_USER_CHAT_ID=ваш chat_id в телеграм
+   ```
 Python3 должен быть уже установлен. 
 Затем используйте `pip` (или `pip3`, есть есть конфликт с Python2) для установки зависимостей:
 ```
