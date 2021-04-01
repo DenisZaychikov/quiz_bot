@@ -23,9 +23,9 @@
     TG_BOT_TOKEN=токен телеграм-бота
     VK_BOT_TOKEN=токен группы вконтакте
     USER_CHAT_ID=ваш chat_id в телеграм
-    REDIS_HOST=redis-14588.c243.eu-west-1-3.ec2.cloud.redislabs.com
-    RADIS_PORT=14588
-    REDIS_PASSWORD=txpKMLjzGkBC97N3i883U7xVdf1K43zx
+    REDIS_HOST=redis_host
+    RADIS_PORT=redis_port
+    REDIS_PASSWORD=redis_password
 ```
 Python3 должен быть уже установлен. 
 Затем используйте `pip` (или `pip3`, есть есть конфликт с Python2) для установки зависимостей:
