@@ -1,13 +1,16 @@
 import os
+from dotenv import load_dotenv
 
-DIRECTORY_PATH = 'questions'
+load_dotenv()
+
+directory_path = os.getenv('DIRECTORY_PATH')
 
 
 def get_questions_and_answers():
     questions_and_answers = {}
-    files = os.listdir(DIRECTORY_PATH)
+    files = os.listdir(directory_path)
     for file in files:
-        with open(os.path.join(DIRECTORY_PATH, file), encoding='KOI8-R') as f:
+        with open(os.path.join(directory_path, file), encoding='KOI8-R') as f:
             file_info = f.read().split('\n\n')
             question = ''
             for item in file_info:

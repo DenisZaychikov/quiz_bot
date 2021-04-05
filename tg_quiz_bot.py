@@ -5,24 +5,13 @@ from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
 import logging
 from dotenv import load_dotenv
 import random
-import redis, certifi
+import redis
 from questions import get_questions_and_answers
-
-NEW_QUESTION, ANSWER = range(2)
-
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO)
+from short_answer import get_short_answer
 
 logger = logging.getLogger(__name__)
 
-
-def get_short_answer(answer):
-    for num, symbol in enumerate(answer):
-        if symbol == '.' or symbol == '(':
-            short_answer = answer[:num].strip()
-
-            return short_answer
+NEW_QUESTION, ANSWER = range(2)
 
 
 def start(bot, update):
@@ -40,8 +29,9 @@ def start(bot, update):
 
 
 def give_up(bot, update):
-    answer = get_short_answer(questions_and_answers[r.get(user_chat_id)])
-    update.message.reply_text(text=answer)
+    answer = questions_and_answers[r.get(user_chat_id)]
+    short_answer = get_short_answer(answer)
+    update.message.reply_text(text=short_answer)
 
     handle_new_question_request(bot, update)
 
@@ -56,8 +46,8 @@ def handle_new_question_request(bot, update):
 
 def handle_solution_attempt(bot, update):
     answer = 'Неправильно… Попробуешь ещё раз?'
-    if update.message.text == get_short_answer(
-            questions_and_answers[r.get(user_chat_id)]):
+    answer_from_data = questions_and_answers[r.get(user_chat_id)]
+    if update.message.text == get_short_answer(answer_from_data):
         answer = 'Правильно! Поздравляю! Для следующего вопроса нажми «Новый вопрос».'
         update.message.reply_text(text=answer)
 
@@ -68,7 +58,7 @@ def handle_solution_attempt(bot, update):
     return ANSWER
 
 
-def error(bot, update, error):
+def error_handler(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
@@ -78,6 +68,9 @@ def cancel(bot, update):
 
 if __name__ == '__main__':
     load_dotenv()
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.INFO)
     tg_bot_token = os.getenv('TG_BOT_TOKEN')
     user_chat_id = os.getenv('USER_CHAT_ID')
     redis_host = os.getenv('REDIS_HOST')
@@ -107,6 +100,6 @@ if __name__ == '__main__':
         fallbacks=[CommandHandler('cancel', cancel)]
     )
     dp.add_handler(conv_handler)
-    dp.add_error_handler(error)
+    dp.add_error_handler(error_handler)
     updater.start_polling()
     updater.idle()

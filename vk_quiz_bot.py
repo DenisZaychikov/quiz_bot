@@ -6,6 +6,7 @@ import os
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 import redis
 from questions import get_questions_and_answers
+from short_answer import get_short_answer
 
 
 def start(event, vk_api, message, keyboard):
@@ -27,14 +28,6 @@ def handle_new_question_request(event, keyboard):
         keyboard=keyboard.get_keyboard(),
         random_id=random.randint(1, 1000)
     )
-
-
-def get_short_answer(answer):
-    for num, symbol in enumerate(answer):
-        if symbol == '.' or symbol == '(':
-            short_answer = answer[:num].strip()
-
-            return short_answer
 
 
 def give_up(event, vk_api):
