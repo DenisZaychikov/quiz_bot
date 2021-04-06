@@ -1,7 +1,4 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 directory_path = os.getenv('DIRECTORY_PATH')
 
